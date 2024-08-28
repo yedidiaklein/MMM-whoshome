@@ -1,0 +1,22 @@
+.whoshome {
+    justify-content: left;
+    align-items: center;
+    font-size: 1.5em;
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+.person {
+    width: 30px;
+    border-radius: 15px;
+    margin: 0 5px;
+    align-items: left;
+
+}
+.person-away {
+    color: dimgrey;
+}
+.bw-image {
+    filter: grayscale(100%);
+}
