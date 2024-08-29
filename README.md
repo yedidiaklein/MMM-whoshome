@@ -6,6 +6,10 @@ This module tracks who is at home by detecting the presence of personal cellular
 
 **Note:** Most phones use randomized MAC addresses. For accurate tracking, ensure your phone uses its real MAC address on your home network.
 
+It looks like this: (Not at home persons are in greyscale)
+
+![Screenshot of whoshome](https://github.com/yedidiaklein/MMM-whoshome/blob/main/whoshome.png?raw=true "Screenshot")
+
 ## Prerequisites
 
 Before installing, make sure you have `nmap` installed on your Linux (Raspberry Pi) server.
