@@ -26,7 +26,9 @@ if [ "$#" -lt 1 ]; then echo Usage example: $0 aa:bb:cc:dd:ee:ff; exit 2; fi;
                 touch $mac
             else
                 # if the ping was not successful
-                rm -f $mac
+                # do nothing (we wqant to save history)
+                # rm -f $mac
+                nodelete=1
             fi
         fi
     done
