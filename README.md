@@ -59,12 +59,12 @@ Add the following configuration to your `config.js` file:
 
 ### Image Configuration
 
-You can specify the path to user images either as URLs or as local files within the `config/people` directory.
+You can specify the path to user images either as URLs or as local files within the `config/people` directory. (Create people under config directory, and copy to there your images.)
 
 ## Advanced Configuration
 
 - **Network Identification:** The script `mapmacs.sh` may not work perfectly with non-standard networks (i.e., not a /24 subnet). Adjust the `network` line manually if necessary.
-- **Presence Detection:** The script `macping.sh` assumes a person is no longer present if they haven’t been detected for 5 minutes. You can adjust this duration, as phones might go to sleep and temporarily disappear even if the person is at home.
+- **Presence Detection:** The script `macping.sh` assumes a person is no longer present if he haven’t been detected for 5 minutes. You can adjust this duration, as phones might go to sleep and temporarily disappear even if the person is at home.
 
 ## Suggestions
 
