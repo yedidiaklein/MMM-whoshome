@@ -20,3 +20,7 @@
 .bw-image {
     filter: grayscale(100%);
 }
+.lastseen {
+    font-size: 0.8em;
+    color: white;
+}
