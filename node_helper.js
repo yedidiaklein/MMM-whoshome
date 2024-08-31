@@ -34,7 +34,7 @@ module.exports = NodeHelper.create({
     for (var key in config.TRACK) {
       mac = config.TRACK[key].mac;
     
-      const output = child.execSync('modules/MMM-whoshome/macping.sh ' + mac, { encoding: 'utf-8', timeout: 3000 });
+      const output = child.execSync('modules/MMM-whoshome/macping.sh ' + mac, { encoding: 'utf-8', timeout: 30000 });
       var lastseen = '';
       if (output.trim() == 1) {
         const state = output.trim();
@@ -45,7 +45,7 @@ module.exports = NodeHelper.create({
         }
       }
 
-      console.log(key + ' ' + mac + ' ' + output);
+      console.log(key + ' ' + mac + ' ' + state + ' ' + lastseen);
       stateArray[counter] = [key, state, lastseen];
       counter += 1;
     }
