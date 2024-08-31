@@ -21,7 +21,7 @@ if [ -f $1 ]; then
             lastseen=`date -d "@$file_date" '+%H:%M'`
         else
             # If modified on a different date, show date and time
-            lastseen=`date -d "@$file_date" '+%Y-%m-%d %H:%M'`
+            lastseen=`date -d "@$file_date" '+%d-%m %H:%M'`
         fi
         echo -n $lastseen
         exit 0
