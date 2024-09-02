@@ -45,6 +45,29 @@ module.exports = NodeHelper.create({
         }
       }
 
+      if (config.push) {
+        if (lastseen == '') {
+          // use current time in mysql date time format
+          var currentdate = new Date();
+          lasts = currentdate.getFullYear() + '-' + (currentdate.getMonth() + 1) + '-' + currentdate.getDate() + '-'
+            + currentdate.getHours() + ':' + currentdate.getMinutes();
+        } else {
+          // convert lastseen to mysql date time format
+          // if lastseen is only HH:MM, add current date
+          if (lastseen.indexOf('.') == -1) {
+            lasts = new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate() + '-' + lastseen;
+          }
+          // if lastseen is DD.MM HH:MM, add current year
+          if (lastseen.indexOf('.') != -1 && lastseen.indexOf(':') != -1) {
+            var lastseenparts = lastseen.split(' ');
+            var dateparts = lastseenparts[0].split('.');
+            var timeparts = lastseenparts[1].split(':');
+            lasts = new Date().getFullYear() + '-' + dateparts[1] + '-' + dateparts[0] + '-' + timeparts[0] + ':' + timeparts[1];
+          }
+        }
+          console.log("Pushing to server: " + key + ' ' + lastseen);
+          pushToServer(key, lasts, config);
+      }
 
       console.log(key + ' ' + mac + ' ' + state + ' ' + lastseen);
       stateArray[counter] = [key, state, lastseen];
@@ -60,3 +83,48 @@ module.exports = NodeHelper.create({
   );
   }
 });
+
+function pushToServer(user, lastseen, config) {
+  const https = require('https');
+  var ret = 0;
+  const options = {
+    hostname: config.push.hostname,
+    path: config.push.path 
+      + '?username=' + encodeURIComponent(user) 
+      + '&lastseen=' + encodeURIComponent(lastseen) 
+      + '&ssid=' + encodeURIComponent(config.push.ssid)
+      + '&clientname=' + encodeURIComponent(config.push.clientname) 
+      + '&token=' + encodeURIComponent(config.push.token),
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Node.js MagicMirror HTTPS Client'
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    let data = '';
+
+    console.log(`Status Code: ${res.statusCode}`);
+
+    res.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    res.on('end', () => {
+      try {
+        const jsonData = JSON.parse(data);
+        //console.log('Response body:', jsonData);
+        ret = 1;
+      } catch (error) {
+        console.error('Error parsing JSON:', error.message);
+      }
+    });
+  });
+
+  req.on('error', (error) => {
+    console.error('Request error:', error.message);
+  });
+
+  req.end();
+  return ret;
+}
