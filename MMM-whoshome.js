@@ -32,7 +32,7 @@ Module.register("MMM-whoshome", {
             } else {
                 html = html + '<img class="person bw-image" src="' + this.config.TRACK[this.peopleArray[i][0]].image 
                     + '"> <span class="person-away">' + this.peopleArray[i][0] + '</span><BR>'
-                    + '<span class="lastseen">' + this.translate("lastseen") + ' : ' + this.peopleArray[i][2] + '</span><BR>';
+                    + '<span class="lastseen">' + this.translate("lastSeen") + ' : ' + this.peopleArray[i][2] + '</span><BR>';
             }
         }
 
