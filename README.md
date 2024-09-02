@@ -66,6 +66,9 @@ You can specify the path to user images either as URLs or as local files within 
 - **Network Identification:** The script `mapmacs.sh` may not work perfectly with non-standard networks (i.e., not a /24 subnet). Adjust the `network` line manually if necessary.
 - **Presence Detection:** The script `macping.sh` assumes a person is no longer present if he haven’t been detected for 5 minutes. You can adjust this duration, as phones might go to sleep and temporarily disappear even if the person is at home.
 
+## Style and UI
+- You can change colors, font size, font family, padding, borders and other UI effects by editing and customizing the css file `whoshome.css` 
+
 ## Suggestions
 
 Any suggestions for improvements or feedback are welcome!
