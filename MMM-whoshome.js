@@ -20,7 +20,7 @@ Module.register("MMM-whoshome", {
         wrapper.setAttribute("dir", this.translate("direction"));
         var i = 0;
         wrapper.className = "whoshome";
-        var html = '<span class="whoshome-title">' + this.translate("sysTitle") + ':</span><br><hr>';
+        var html = '<span class="whoshome-title">' + this.translate("sysTitle") + '</span><br><hr>';
         console.log("in getDom function");
         console.log(this.peopleArray);
 
