@@ -4,12 +4,20 @@ Module.register("MMM-whoshome", {
 		return ["whoshome.css"];
 	},
 
+    getTranslations () {
+		return {
+			en: "translations/en.json",
+			fr: "translations/fr.json",
+			he: "translations/he.json"
+		};
+	},
+
     // Override dom generator.
     getDom: function () {
         var wrapper = document.createElement("div");
         var i = 0;
         wrapper.className = "whoshome";
-        var html = '<span class="whoshome-title">Who\'s Home:</span><br><hr>';
+        var html = '<span class="whoshome-title">' + this.translate("sysTitle") + ':</span><br><hr>';
         console.log("in getDom function");
         console.log(this.peopleArray);
 
@@ -24,7 +32,7 @@ Module.register("MMM-whoshome", {
             } else {
                 html = html + '<img class="person bw-image" src="' + this.config.TRACK[this.peopleArray[i][0]].image 
                     + '"> <span class="person-away">' + this.peopleArray[i][0] + '</span><BR>'
-                    + '<span class="lastseen">Last seen: ' + this.peopleArray[i][2] + '</span><BR>';
+                    + '<span class="lastseen">' + this.translate("lastseen") + ' : ' + this.peopleArray[i][2] + '</span><BR>';
             }
         }
 
