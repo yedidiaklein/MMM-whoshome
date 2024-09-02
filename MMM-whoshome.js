@@ -8,13 +8,16 @@ Module.register("MMM-whoshome", {
 		return {
 			en: "translations/en.json",
 			fr: "translations/fr.json",
-			he: "translations/he.json"
+			he: "translations/he.json",
+            es: "translations/es.json",
+            de: "translations/de.json"
 		};
 	},
 
     // Override dom generator.
     getDom: function () {
         var wrapper = document.createElement("div");
+        wrapper.setAttribute("dir", this.translate("direction"));
         var i = 0;
         wrapper.className = "whoshome";
         var html = '<span class="whoshome-title">' + this.translate("sysTitle") + ':</span><br><hr>';

@@ -1,4 +1,5 @@
 {
 	"sysTitle": "Who's Home",
-	"lastSeen": "Last seen at"
+	"lastSeen": "Last seen at",
+    "direction": "ltr"
 }

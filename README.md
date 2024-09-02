@@ -67,7 +67,7 @@ You can specify the path to user images either as URLs or as local files within 
 - **Presence Detection:** The script `macping.sh` assumes a person is no longer present if he haven’t been detected for 5 minutes. You can adjust this duration, as phones might go to sleep and temporarily disappear even if the person is at home.
 
 ## Style and UI
-- You can change colors, font size, font family, padding, borders and other UI effects by editing and customizing the css file `whoshome.css` 
+- You can change colors, font size, font family, padding, borders and other UI effects by copying the content of `whoshome.css` to `css/custom.css` and overriding there whatever you want.
 
 ## Suggestions
 
