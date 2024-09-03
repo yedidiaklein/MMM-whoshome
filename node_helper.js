@@ -2,6 +2,9 @@ var NodeHelper = require("node_helper");
 var child = require('child_process');
 const { exit } = require("process");
 
+//init global state
+global.state = {};
+
 module.exports = NodeHelper.create({
   start: function() {
   },
@@ -45,7 +48,24 @@ module.exports = NodeHelper.create({
         }
       }
 
-      if (config.push) {
+      // check if global.state.key is set and if it is different from current state
+      if (global.state[key] != null) {
+        if (global.state[key] == state) {
+          console.log("State not changed and is equal to global state " + key + " " + global.state[key] + " " + state);
+          var changed = 0;
+        } else {
+          console.log("State changed and is different from global state " + key + " " + global.state[key] + " " + state);
+          var changed = 1;
+          global.state[key] = state;
+        }
+      } else {
+        console.log("Global state not set, setting to current state " + key + " " + state);
+        global.state[key] = state;
+        var changed = 1;
+      }
+
+
+      if (config.push != null && changed == 1) {
         if (lastseen == '') {
           // use current time in mysql date time format
           var currentdate = new Date();
@@ -66,7 +86,7 @@ module.exports = NodeHelper.create({
           }
         }
           console.log("Pushing to server: " + key + ' ' + lastseen);
-          pushToServer(key, lasts, config);
+          pushToServer(key, lasts, state, config);
       }
 
       console.log(key + ' ' + mac + ' ' + state + ' ' + lastseen);
@@ -84,7 +104,7 @@ module.exports = NodeHelper.create({
   }
 });
 
-function pushToServer(user, lastseen, config) {
+function pushToServer(user, lastseen, state, config) {
   const https = require('https');
   var ret = 0;
   const options = {
@@ -94,7 +114,8 @@ function pushToServer(user, lastseen, config) {
       + '&lastseen=' + encodeURIComponent(lastseen) 
       + '&ssid=' + encodeURIComponent(config.push.ssid)
       + '&clientname=' + encodeURIComponent(config.push.clientname) 
-      + '&token=' + encodeURIComponent(config.push.token),
+      + '&token=' + encodeURIComponent(config.push.token)
+      + '&state=' + state,
     method: 'GET',
     headers: {
       'User-Agent': 'Node.js MagicMirror HTTPS Client'
