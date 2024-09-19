@@ -1,6 +1,6 @@
-var NodeHelper = require("node_helper");
-var child = require('child_process');
-const { exit } = require("process");
+const child = require("node:child_process");
+const { exit } = require("node:process");
+const NodeHelper = require("node_helper");
 
 module.exports = NodeHelper.create({
   start: function() {
