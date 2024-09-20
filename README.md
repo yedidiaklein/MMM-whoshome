@@ -1,14 +1,16 @@
 # MMM-whoshome
 
-**Magic Mirror Module for Displaying Who is Home**
+**MMM-whoshome** is a module for [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) to display who is home.
 
 This module tracks who is at home by detecting the presence of personal cellular phones on the local network. It can also be used with laptops, cars (e.g., Teslas), or any other Wi-Fi-enabled devices.
 
 **Note:** Most phones use randomized MAC addresses. For accurate tracking, ensure your phone uses its real MAC address on your home network.
 
+## Screenshot
+
 It looks like this: (Not at home persons are in greyscale)
 
-![Screenshot of whoshome](https://github.com/yedidiaklein/MMM-whoshome/blob/main/whoshome.png?raw=true "Screenshot")
+![Screenshot of whoshome](whoshome.png)
 
 ## Prerequisites
 
@@ -25,7 +27,7 @@ sudo apt -y install nmap
 1. Navigate to the MagicMirror modules directory:
 
     ```bash
-    cd MagicMirror/modules
+    cd ~/MagicMirror/modules
     ```
 
 2. Clone the repository:
@@ -33,6 +35,15 @@ sudo apt -y install nmap
     ```bash
     git clone https://github.com/yedidiaklein/MMM-whoshome
     ```
+
+## Update
+
+Just enter the MMM-whoshome directory and pull the update:
+
+```bash
+cd ~/MagicMirror/modules/MMM-whoshome
+git pull
+```
 
 ## Configuration
 
@@ -54,7 +65,7 @@ Add the following configuration to your `config.js` file:
             }
         }
     }
-}
+},
 ```
 
 ### Image Configuration
@@ -67,7 +78,8 @@ You can specify the path to user images either as URLs or as local files within 
 - **Presence Detection:** The script `macping.sh` assumes a person is no longer present if he haven’t been detected for 5 minutes. You can adjust this duration, as phones might go to sleep and temporarily disappear even if the person is at home.
 
 ## Style and UI
-- You can change colors, font size, font family, padding, borders and other UI effects by editing and customizing the css file `whoshome.css` 
+
+You can change colors, font size, font family, padding, borders, and other UI effects by copying the contents of `whoshome.css` to your `custom.css` and customizing it there.
 
 ## Suggestions
 
