@@ -1,62 +1,64 @@
-var NodeHelper = require("node_helper");
-var child = require('child_process');
-const { exit } = require("process");
+const child = require("node:child_process");
+const Log = require("logger");
+const NodeHelper = require("node_helper");
 
 module.exports = NodeHelper.create({
-  start: function() {
-  },
-  
-  socketNotificationReceived: function (notification, payload, user) {
-    console.log(this.name + " received a socket notification: " + notification + " - Payload: " + payload);
-    if (notification === 'FETCH_PEOPLE') {
-        this.getPeople(payload);
-    }    
+  start () {
+    Log.log(`Starting node helper for: ${this.name}`);
   },
 
-  getPeople: function(config) {
+  socketNotificationReceived (notification, payload) {
+    Log.debug(`${this.name} received a socket notification: ${notification} - Payload: ${payload}`);
+    if (notification === "FETCH_PEOPLE") {
+      this.getPeople(payload);
+    }
+  },
+
+  getPeople (config) {
     const self = this;
 
     // run ansyc mapping of mac addresses
-    console.log("Mapping mac addresses...");
-    var macs = '';
-    for (var key in config.TRACK) {
-      macs += config.TRACK[key].mac + ' ';
+    Log.log("Mapping mac addresses...");
+    let macs = "";
+    for (const key in config.TRACK) {
+      if (Object.hasOwn(config.TRACK, key)) {
+        macs += `${config.TRACK[key].mac} `;
+      }
     }
-    
-    const mapsoutput = child.exec('modules/MMM-whoshome/mapmacs.sh ' + macs, { encoding: 'utf-8', timeout: 300000 });
-    console.log("Mapping output:");
-    console.log(mapsoutput);
 
+    // run the script to map the mac addresses
+    const mapsoutput = child.exec(`modules/MMM-whoshome/mapmacs.sh ${macs}`, {encoding: "utf-8", timeout: 300000});
+    Log.log("Mapping output:");
+    Log.log(mapsoutput);
 
-    var mac = '';
-    var stateArray = new Array();
-    var counter = 0;
-    for (var key in config.TRACK) {
-      mac = config.TRACK[key].mac;
-      var state = 0;
-      const output = child.execSync('modules/MMM-whoshome/macping.sh ' + mac, { encoding: 'utf-8', timeout: 30000 });
-      var lastseen = '';
-      if (output.trim() == 1) {
-        state = 1;
-      } else {
-        state = 0;
-        if (output.trim() != 0) {
-          lastseen = output.trim();
+    // run async ping of mac addresses
+    const stateArray = [];
+    let counter = 0;
+    for (const key in config.TRACK) {
+      if (Object.hasOwn(config.TRACK, key)) {
+        const {mac} = config.TRACK[key];
+        let state = 0;
+        const output = child.execSync(`modules/MMM-whoshome/macping.sh ${mac}`, {encoding: "utf-8", timeout: 30000});
+        let lastseen = "";
+        if (output.trim() === 1) {
+          state = 1;
+        } else {
+          state = 0;
+          if (output.trim() !== 0) {
+            lastseen = output.trim();
+          }
         }
+
+        Log.log(`${key} ${mac} ${state} ${lastseen}`);
+        stateArray[counter] = [key, state, lastseen];
+        counter += 1;
       }
-
-
-      console.log(key + ' ' + mac + ' ' + state + ' ' + lastseen);
-      stateArray[counter] = [key, state, lastseen];
-      counter += 1;
     }
-    console.log("Final state:");
-    console.log(stateArray);
-    self.sendSocketNotification(
-      'FETCHED_PEOPLE', {
-          'people': stateArray,
-          'id': config.id,
-      }
-  );
+    Log.log("Final state:");
+    Log.log(stateArray);
+    self.sendSocketNotification("FETCHED_PEOPLE", {
+      people: stateArray,
+      id: config.id
+    });
   }
 });
