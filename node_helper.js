@@ -1,64 +1,151 @@
-const child = require("node:child_process");
-const Log = require("logger");
-const NodeHelper = require("node_helper");
+var NodeHelper = require("node_helper");
+var child = require('child_process');
+const { exit } = require("process");
+
+//init global state
+global.state = {};
 
 module.exports = NodeHelper.create({
-  start () {
-    Log.log(`Starting node helper for: ${this.name}`);
+  start: function() {
+  },
+  
+  socketNotificationReceived: function (notification, payload, user) {
+    console.log(this.name + " received a socket notification: " + notification + " - Payload: " + payload);
+    if (notification === 'FETCH_PEOPLE') {
+        this.getPeople(payload);
+    }    
   },
 
-  socketNotificationReceived (notification, payload) {
-    Log.debug(`${this.name} received a socket notification: ${notification} - Payload: ${payload}`);
-    if (notification === "FETCH_PEOPLE") {
-      this.getPeople(payload);
-    }
-  },
-
-  getPeople (config) {
+  getPeople: function(config) {
     const self = this;
 
     // run ansyc mapping of mac addresses
-    Log.log("Mapping mac addresses...");
-    let macs = "";
-    for (const key in config.TRACK) {
-      if (Object.hasOwn(config.TRACK, key)) {
-        macs += `${config.TRACK[key].mac} `;
-      }
+    console.log("Mapping mac addresses...");
+    var macs = '';
+    for (var key in config.TRACK) {
+      macs += config.TRACK[key].mac + ' ';
     }
+    
+    const mapsoutput = child.exec('modules/MMM-whoshome/mapmacs.sh ' + macs, { encoding: 'utf-8', timeout: 300000 });
+    console.log("Mapping output:");
+    console.log(mapsoutput);
 
-    // run the script to map the mac addresses
-    const mapsoutput = child.exec(`modules/MMM-whoshome/mapmacs.sh ${macs}`, {encoding: "utf-8", timeout: 300000});
-    Log.log("Mapping output:");
-    Log.log(mapsoutput);
 
-    // run async ping of mac addresses
-    const stateArray = [];
-    let counter = 0;
-    for (const key in config.TRACK) {
-      if (Object.hasOwn(config.TRACK, key)) {
-        const {mac} = config.TRACK[key];
-        let state = 0;
-        const output = child.execSync(`modules/MMM-whoshome/macping.sh ${mac}`, {encoding: "utf-8", timeout: 30000});
-        let lastseen = "";
-        if (output.trim() === 1) {
-          state = 1;
+    var mac = '';
+    var stateArray = new Array();
+    var counter = 0;
+    for (var key in config.TRACK) {
+      mac = config.TRACK[key].mac;
+      var state = 0;
+      const output = child.execSync('modules/MMM-whoshome/macping.sh ' + mac, { encoding: 'utf-8', timeout: 30000 });
+      var lastseen = '';
+      if (output.trim() == 1) {
+        state = 1;
+      } else {
+        state = 0;
+        if (output.trim() != 0) {
+          lastseen = output.trim();
+        }
+      }
+
+      // check if global.state.key is set and if it is different from current state
+      if (global.state[key] != null) {
+        if (global.state[key] == state) {
+          console.log("State not changed and is equal to global state " + key + " " + global.state[key] + " " + state);
+          var changed = 0;
         } else {
-          state = 0;
-          if (output.trim() !== 0) {
-            lastseen = output.trim();
+          console.log("State changed and is different from global state " + key + " " + global.state[key] + " " + state);
+          var changed = 1;
+          global.state[key] = state;
+        }
+      } else {
+        console.log("Global state not set, setting to current state " + key + " " + state);
+        global.state[key] = state;
+        var changed = 1;
+      }
+
+
+      if (config.push != null && changed == 1) {
+        if (lastseen == '') {
+          // use current time in mysql date time format
+          var currentdate = new Date();
+          lasts = currentdate.getFullYear() + '-' + (currentdate.getMonth() + 1) + '-' + currentdate.getDate() + '-'
+            + currentdate.getHours() + ':' + currentdate.getMinutes();
+        } else {
+          // convert lastseen to mysql date time format
+          // if lastseen is only HH:MM, add current date
+          if (lastseen.indexOf('.') == -1) {
+            lasts = new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate() + '-' + lastseen;
+          }
+          // if lastseen is DD.MM HH:MM, add current year
+          if (lastseen.indexOf('.') != -1 && lastseen.indexOf(':') != -1) {
+            var lastseenparts = lastseen.split(' ');
+            var dateparts = lastseenparts[0].split('.');
+            var timeparts = lastseenparts[1].split(':');
+            lasts = new Date().getFullYear() + '-' + dateparts[1] + '-' + dateparts[0] + '-' + timeparts[0] + ':' + timeparts[1];
           }
         }
-
-        Log.log(`${key} ${mac} ${state} ${lastseen}`);
-        stateArray[counter] = [key, state, lastseen];
-        counter += 1;
+          console.log("Pushing to server: " + key + ' ' + lastseen);
+          pushToServer(key, lasts, state, config);
       }
+
+      console.log(key + ' ' + mac + ' ' + state + ' ' + lastseen);
+      stateArray[counter] = [key, state, lastseen];
+      counter += 1;
     }
-    Log.log("Final state:");
-    Log.log(stateArray);
-    self.sendSocketNotification("FETCHED_PEOPLE", {
-      people: stateArray,
-      id: config.id
-    });
+    console.log("Final state:");
+    console.log(stateArray);
+    self.sendSocketNotification(
+      'FETCHED_PEOPLE', {
+          'people': stateArray,
+          'id': config.id,
+      }
+  );
   }
 });
+
+function pushToServer(user, lastseen, state, config) {
+  const https = require('https');
+  var ret = 0;
+  const options = {
+    hostname: config.push.hostname,
+    path: config.push.path 
+      + '?username=' + encodeURIComponent(user) 
+      + '&lastseen=' + encodeURIComponent(lastseen) 
+      + '&ssid=' + encodeURIComponent(config.push.ssid)
+      + '&clientname=' + encodeURIComponent(config.push.clientname) 
+      + '&token=' + encodeURIComponent(config.push.token)
+      + '&state=' + state,
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Node.js MagicMirror HTTPS Client'
+    }
+  };
+
+  const req = https.request(options, (res) => {
+    let data = '';
+
+    console.log(`Status Code: ${res.statusCode}`);
+
+    res.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    res.on('end', () => {
+      try {
+        const jsonData = JSON.parse(data);
+        //console.log('Response body:', jsonData);
+        ret = 1;
+      } catch (error) {
+        console.error('Error parsing JSON:', error.message);
+      }
+    });
+  });
+
+  req.on('error', (error) => {
+    console.error('Request error:', error.message);
+  });
+
+  req.end();
+  return ret;
+}
